@@ -1,0 +1,148 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define m 1000
+#define MAKS 5
+
+typedef int itemType;
+typedef struct {
+    itemType data[MAKS];
+    int idx;
+}stack;
+
+void inisialisasi(stack *);
+void push(stack *, itemType);
+itemType pop(stack *);
+int empty(stack *);
+int full(stack *);
+void tampil();
+void warshall();
+int start, end;
+int Q[5][5]={{m,1,3,m,m},{m,m,1,m,5},{3,m,m,2,m},{m,m,m,m,1},{m,m,m,m,m}};
+int P[5][5]={{0,1,1,0,0},{0,0,1,0,1},{1,0,0,1,0,},{0,0,0,0,1},{0,0,0,0,0}};
+int R[5][5]={{m,0,0,m,m},{m,m,0,m,m},{0,m,m,0,m},{m,m,m,m,0},{m,m,m,m,m}};
+
+int main()
+{
+    tampil();
+    warshall();
+    tampil();
+    puts("baca rute");
+    printf("asal: ");
+    fflush(stdin);
+    scanf("%d",&start);
+    printf("tujuan: ");
+    fflush(stdin);
+    scanf("%d",&end);
+    baca();
+    return 0;
+}
+
+void baca(){
+    stack tumpukan;
+    inisialisasi(&tumpukan);
+    int temp=end-1;
+    while(R[start-1][temp] != 0){
+        push(&tumpukan, temp);
+        temp=R[start-1][temp]-1;
+    }
+    printf("Rute dari %d ke %d: ", start, end);
+    printf("%d-",start);
+    do
+    {
+        printf("%d-", pop(&tumpukan));
+    }while(!empty(&tumpukan));
+    printf("%d",end);
+    printf("\nDengan beban = %d\n",Q[start-1][end-1]);
+}
+
+void inisialisasi(stack *S){
+    S->idx = 0;
+}
+
+int empty(stack *S){
+    if(S->idx == 0)
+        return 1;
+    else
+        return 0;
+}
+
+int full(stack *S){
+    if(S->idx == MAKS)
+        return 1;
+    else
+        return 0;
+}
+
+void push(stack *S, itemType x){
+    if(full(S) == 1)
+        puts("data sudah full");
+    else{
+        S->data[S->idx] = x;
+        S->idx++;
+    }
+}
+
+itemType pop(stack *S){
+    itemType temp;
+    if (empty(S) == 1)
+        puts("data kosong");
+    else{
+        S->idx--;
+        temp = S->data[S->idx];
+    }
+    return temp;
+}
+
+void warshall(){
+    for(int k=0;k<5;k++){
+        for(int i=0;i<5;i++){
+            for(int j=0;j<5;j++){
+                P[i][j] =  P[i][j] || (P[i][k] && P[k][j]);
+                if ((Q[i][k] + Q[k][j]) < Q[i][j]){
+                    Q[i][j] = Q[i][k]+Q[k][j];
+                    if (R[k][j] == 0)
+                        R[i][j] = k+1;
+                    else
+                        R[i][j]=R[k][j];
+                }
+
+            }
+        }
+    }
+}
+
+void tampil(){
+    printf("Beban: \n");
+    for(int i=0;i<5;i++){
+        for(int j=0;j<5;j++){
+            if(Q[i][j]==1000){
+                printf("m ");
+            }
+            else
+                printf("%d ",Q[i][j]);
+        }
+        puts("");
+    }
+    printf("Jalur: \n");
+    for(int i=0;i<5;i++){
+        for(int j=0;j<5;j++){
+            if(P[i][j]==1000){
+                printf("m ");
+            }
+            else
+                printf("%d ",P[i][j]);
+        }
+        puts("");
+    }
+    printf("Rute: \n");
+    for(int i=0;i<5;i++){
+        for(int j=0;j<5;j++){
+            if(R[i][j]==1000){
+                printf("m ");
+            }
+            else
+                printf("%d ",R[i][j]);
+        }
+        puts("");
+    }
+}
