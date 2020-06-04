@@ -1,0 +1,171 @@
+#include<stdio.h>
+#define M 69420
+#define N 10
+
+typedef int itemType;
+typedef struct {
+    itemType data[1000];
+    int idx;
+}stack;
+
+void input(int [N][N], int [N][N], int [N][N]);
+void Tampil(int [N][N], char *);
+void Warshall(int [N][N], int [N][N], int [N][N]);
+void BacaRute (int [N][N], int, int);
+void inisialisasi(stack *);
+void push(stack *, itemType);
+itemType pop(stack *);
+int empty(stack *);
+int full(stack *);
+
+int n;
+
+int main()
+{
+    int Beban[N][N], Jalur[N][N], Rute[N][N], asal, tujuan;
+    printf("Masukkan banyak nodes (maks 10) : ");
+    scanf("%d", &n);
+    fflush(stdin);
+    input(Beban, Jalur, Rute);
+    char pil;
+    puts("Matriks sebelum Algoritma Warshall :\n");
+    Tampil(Beban, "Beban");
+    Tampil(Jalur, "Jalur");
+    Tampil(Rute, "Rute");
+    Warshall(Beban, Jalur, Rute);
+    puts("Matriks setelah Algoritma Warshall :\n");
+    Tampil(Beban, "Beban");
+    Tampil(Jalur, "Jalur");
+    Tampil(Rute, "Rute");
+    do{
+        puts("Baca Rute");
+        printf("Asal (1-5) : ");
+        scanf("%d", &asal);
+        fflush(stdin);
+        printf("Tujuan (1-5) : ");
+        scanf("%d", &tujuan);
+        fflush(stdin);
+        BacaRute(Rute, asal, tujuan);
+        printf("Lagi (y/t) ? ");
+        scanf("%c", &pil);
+        fflush(stdin);
+        puts("");
+    }while(pil == 'y' || pil == 'Y');
+}
+
+void input(int Q[N][N], int P[N][N], int R[N][N])
+{
+    int i, j, valQ;
+    char valP;
+    for(i = 0; i < n; i++){
+        for(j = 0; j < n; j++){
+            if(i == j){
+                Q[i][j] = M;
+                P[i][j] = 0;
+                R[i][j] = M;
+            }
+            else{
+                printf("\nApakah ada jalur dari %d ke %d (y/t) ? ", i+1, j+1);
+                scanf("%c", &valP);
+                fflush(stdin);
+                if(valP == 'y' || valP == 'Y'){
+                    printf("Masukkan nilai bebannya : ");
+                    scanf("%d", &valQ);
+                    fflush(stdin);
+                    Q[i][j] = valQ;
+                    P[i][j] = 1;
+                    R[i][j] = 0;
+                }
+                else{
+                    Q[i][j] = M;
+                    P[i][j] = 0;
+                    R[i][j] = M;
+                }
+            }
+        }
+    }
+}
+
+void Tampil(int data[N][N], char *judul)
+{
+    printf("%s = \n",judul);
+    for(int i=0; i<n; i++){
+        for(int j=0; j<n; j++){
+            if(data[i][j] >= M)
+                printf("M ");
+            else
+                printf("%d ", data[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+void Warshall(int Q[N][N], int P[N][N], int R[N][N])
+{
+    for(int k=0; k<n; k++){
+        for (int i=0; i<n; i++){
+            for (int j=0; j<n; j++){
+                P[i][j] = P[i][j] | (P[i][k] & P[k][j]);
+                if ((Q[i][k] + Q[k][j]) < Q[i][j]){
+                    Q[i][j] = Q[i][k] + Q[k][j];
+                    if (R[k][j] == 0)
+                        R[i][j] = k+1;
+                    else
+                        R[i][j] = R[k][j];
+                }
+            }
+        }
+    }
+}
+
+void BacaRute(int R[N][N], int a, int z)
+{
+    stack tumpuk;
+    inisialisasi(&tumpuk);
+    int beban;
+    int s = z - 1;
+    while(!full(&tumpuk) && R[a-1][s] != 0){
+        push(&tumpuk, s);
+        s = R[a-1][s] - 1;
+    }
+    beban = tumpuk.idx + 2;
+    printf("Rute dari %d ke %d adalah : ", a, z);
+    printf("%d - ",a);
+    while(!empty(&tumpuk)){
+        printf("%d - ",pop(&tumpuk));
+    }
+    printf("%d\n",z);
+    printf("Dengan beban = %d\n", beban);
+}
+
+void inisialisasi(stack *S){
+    S->idx = 0;
+}
+
+int empty(stack *S){
+    return (S->idx == 0);
+}
+
+int full(stack *S){
+    return (S->idx == n);
+}
+
+void push(stack *S, itemType x){
+    if(full(S) == 1)
+        puts("data sudah full");
+    else{
+        S->data[S->idx++] = x;
+    }
+}
+
+itemType pop(stack *S){
+    itemType temp;
+    if (empty(S) == 1)
+        puts("data kosong");
+    else{
+        S->idx--;
+        temp = S->data[S->idx];
+    }
+    return temp;
+}
